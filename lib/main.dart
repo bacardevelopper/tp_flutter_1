@@ -27,14 +27,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  /* ------------- VARIABLES */
   Color couleur = Colors.pinkAccent;
+  /* ------------- FIN VARIABLES */
+
   /* --- METHODES -- */
   IconButton bouton(IconData iconeData, double sizerT) {
     return new IconButton(
-        color: Colors.blueGrey, icon: new Icon(iconeData), onPressed: () {});
+      iconSize: sizerT,
+      color: Colors.blueAccent,
+      icon: new Icon(iconeData),
+      onPressed: () {},
+    );
   }
 
-  Padding PaddingText(String data, double taille) {
+  Padding paddingText(String data, double taille) {
     return new Padding(
       padding: EdgeInsets.all(taille),
       child: Text(
@@ -51,6 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: new AppBar(
         centerTitle: true,
         title: new Text("AppMusic"),
+        backgroundColor: Colors.blueAccent,
       ),
       body: new Center(
         child: new Column(
@@ -60,14 +68,14 @@ class _MyHomePageState extends State<MyHomePage> {
               elevation: 9.0,
               child: new Container(
                 width: MediaQuery.of(context).size.height / 2.5,
-                color: Colors.pinkAccent,
+                color: Colors.lightBlue,
                 height: MediaQuery.of(context).size.height / 2.5,
               ),
             ),
             /* -- paddingText -- */
 
-            PaddingText('Titre music', 7.3),
-            PaddingText('Titre music', 2.0),
+            paddingText('Titre music', 7.3),
+            paddingText('Titre music', 2.0),
             new Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[

@@ -34,16 +34,19 @@ class _MyHomePageState extends State<MyHomePage> {
   // --
   AudioPlayer playerAudio;
   Duration position = new Duration(seconds: 0);
+  // ignore: cancel_subscriptions
   StreamSubscription positionSub;
+  // ignore: cancel_subscriptions
   StreamSubscription stateSubscription;
   Duration duree = new Duration(seconds: 0);
   PlayerState statut = PlayerState.stopped;
+  int index = 0;
   // --
   List<Music> maListeDeMusique = [
     new Music("theme Swift", "codabee", "assets/un.jpg",
         "https://codabee.com/wp-content/uploads/2018/06/deux.mp3"),
-    new Music("data", "bur", "assets/deux.jpg",
-        "https://codabee.com/wp-content/uploads/2018/06/deux.mp3"),
+    new Music("data", "bur", "assets/deux.png",
+        "https://codabee.com/wp-content/uploads/2018/06/un.mp3"),
   ];
 
   // --
@@ -71,16 +74,16 @@ class _MyHomePageState extends State<MyHomePage> {
       onPressed: () {
         switch (action) {
           case ActionMusic.play:
-            print("play");
+            play();
             break;
           case ActionMusic.pause:
-            print("pause");
+            pause();
             break;
           case ActionMusic.forward:
-            print("forward");
+            forward();
             break;
           case ActionMusic.rewind:
-            print("rewind");
+            rewind();
             break;
           default:
             print("default");
@@ -131,13 +134,62 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  // --
+  Future play() async {
+    await playerAudio.play(maMusiqueActuelle.urlSong);
+    setState(() {
+      statut = PlayerState.playing;
+    });
+  }
+
+  // --
+  Future pause() async {
+    await playerAudio.pause();
+    setState(() {
+      statut = PlayerState.paused;
+    });
+  }
+
+  // --
+  void forward() {
+    if (index == maListeDeMusique.length - 1) {
+      index = 0;
+    } else {
+      index++;
+    }
+    maMusiqueActuelle = maListeDeMusique[index];
+    playerAudio.stop();
+    configurationAudio();
+    play();
+  }
+
+  void rewind() {
+    if (position > Duration(seconds: 3)) {
+      playerAudio.seek(0.0); // revenir au debut de la musique
+    } else {
+      if (index == 0) {
+        index = maListeDeMusique.length - 1;
+      } else {
+        index--;
+      }
+      maMusiqueActuelle = maListeDeMusique[index];
+      playerAudio.stop();
+      configurationAudio();
+      play();
+    }
+  }
+
+  String timeMusic(Duration duree) {
+    return duree.toString().split('.').first;
+  }
+
   /* --- fin METHODES ---------- */
   // --
   /* quand l'etat va etre initialisé */
   @override
   void initState() {
     super.initState();
-    maMusiqueActuelle = maListeDeMusique[0];
+    maMusiqueActuelle = maListeDeMusique[index];
     configurationAudio();
   }
 
@@ -171,15 +223,22 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 bouton(Icons.fast_rewind_rounded, 30.0, ActionMusic.rewind),
-                bouton(Icons.play_arrow_rounded, 50.0, ActionMusic.play),
+                bouton(
+                    (statut == PlayerState.playing)
+                        ? Icons.pause
+                        : Icons.play_arrow_rounded,
+                    50.0,
+                    (statut == PlayerState.playing)
+                        ? ActionMusic.pause
+                        : ActionMusic.play),
                 bouton(Icons.fast_forward_rounded, 30.0, ActionMusic.forward),
               ],
             ),
             new Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                textSlide("0:0"),
-                textSlide("0:30"),
+                textSlide(timeMusic(position)),
+                textSlide(timeMusic(duree)),
               ],
             ),
             new Slider(
@@ -191,8 +250,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onChanged: (double d) {
                 /* la position du curseur de slider sera = d */
                 setState(() {
-                  Duration nouvelleDuration = new Duration(seconds: d.toInt());
-                  position = nouvelleDuration;
+                  playerAudio.seek(d);
                 });
               },
             )
